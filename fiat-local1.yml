@@ -14,3 +14,12 @@ auth:
       (distinguishedName=CN={0},OU=Employees,OU=Opsmx User,DC=local,DC=opsmx,DC=com)
       (distinguishedName=CN={0},OU=Generics,OU=Opsmx User,DC=local,DC=opsmx,DC=com)
       (distinguishedName=CN={0},OU=CATE,DC=local,DC=opsmx,DC=com))
+
+
+#  To add Roles add this file /home/spinnaker/.hal/defaults/profiles/fiat-local.yml
+# add gate.yml host: 0.0.0.0 at /home/spinnaker/.hal/defalut/service-settings/gate.yml
+# add deck.yml host: 0.0.0.0 at /home/spinnaker/.hal/defalut/service-settings/deck.yml
+
+# hal config security authz ldap edit --url ldaps://35.230.138.249:389/dc=local,dc=opsmx,dc=com
+# hal config security authz enable/disable
+#  hal config security authz edit --type ldap
