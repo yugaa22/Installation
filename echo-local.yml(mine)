@@ -1,0 +1,19 @@
+cat echo-local.yml
+mail:
+  enabled: true
+  from: yugandhar@nsystems.in
+spring:
+  mail:
+    host: smtp.zoho.com
+    username: yugandhar@nsystems.in
+    password: YugandharOpsMx123
+    port: 587
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+        transport:
+          protocol: smtp
+#       debug: true <- this is useful if you are mucking around with smtp properties
