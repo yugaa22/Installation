@@ -44,17 +44,8 @@ function localDebian(){
 }
 function LocalGit(){
         echo "localgit"
-        echo "Please  confirm that you have Already setup 'Git' "
-		echo "please select '1' to Install Git else press any key to continue"
-		read  response
-   if [ $response -eq 1 ]
-      then
-        echo "instlling Git"
-		 Git
-        echo "done"
-   else
-        echo "Thank You for Response"
-   fi
+        Git
+	
         sudo add-apt-repository ppa:openjdk-r/ppa -y
         sudo apt-get update && apt-get install openjdk-8-jdk -y
         curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.34.0/install.sh | bash
@@ -251,7 +242,7 @@ function Kubernetes(){
 function Dev-SingleNode-K8s-Cluster(){
              echo "Do You Have Docker Installed on Your System which is Pre-Requirement for K8s"
                docker -v
-               value=echo $?
+               value=`echo $?`
                if [ $value -eq 127 ]
             then
                 Docker
@@ -297,7 +288,7 @@ function Dev-SingleNode-K8s-Cluster(){
                                                      #Installing Docker
 function Docker(){
      docker -v > /dev/null 2>&1
-     value=echo $?
+     value=`echo $?`
      if [ $value -eq 127 ]
         then
         echo "installing Docker"
