@@ -371,7 +371,7 @@ function Minio-SetUp(){
         echo "Enter Minio_Secret_Key"
         read Secret_key
         echo   "MINIO_VOLUMES=\"/usr/local/share/minio/\"
-                MINIO_OPTS=\"-C /etc/minio --address 0.0.0.0:9001\"
+                MINIO_OPTS=\"-C /etc/minio --address 0.0.0.0:9000\"
                 MINIO_ACCESS_KEY=$User_name
                 MINIO_SECRET_KEY=$Secret_key " >> minio.txt
 
@@ -382,7 +382,7 @@ function Minio-SetUp(){
         sudo systemctl enable minio
         sudo systemctl start minio
         sudo systemctl status minio
-        echo "Please save Minio_access-key =$User_name  && Minio_secret-key =$Secret_key and End Point is http://localhost:9001  to access Minio Storage"	
+        echo "Please save Minio_access-key =$User_name  && Minio_secret-key =$Secret_key and End Point is http://localhost:9000  to access Minio Storage"	
        else
          echo "Minio Already Installed in Your Machine"
      fi
