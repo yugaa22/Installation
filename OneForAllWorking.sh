@@ -94,7 +94,7 @@ function Minio(){
          echo "Enter Minio User_name"
 	    read User_name
          ENDPOINT=`hostname -I | awk '{print $1}'`
-	ENDPOINT=http://$ENDPOINT:9001
+	ENDPOINT=http://$ENDPOINT:9000
         hal config storage s3 edit --endpoint $ENDPOINT  --access-key-id $User_name --secret-access-key
         sudo hal config storage edit --type s3
         unset ENDPOINT
