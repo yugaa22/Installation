@@ -93,8 +93,7 @@ function Minio(){
         Minio-SetUp
          echo "Enter Minio User_name"
 	    read User_name
-        fi
-        ENDPOINT=`hostname -I | awk '{print $1}'`
+         ENDPOINT=`hostname -I | awk '{print $1}'`
 	ENDPOINT=http://$ENDPOINT:9001
         hal config storage s3 edit --endpoint $ENDPOINT  --access-key-id $User_name --secret-access-key
         sudo hal config storage edit --type s3
@@ -233,15 +232,8 @@ function Kubernetes(){
                                                           #Installing  Docker & Kubernetes With Single Node
 function Dev-SingleNode-K8s-Cluster(){
              echo "Do You Have Docker Installed on Your System which is Pre-Requirement for K8s"
-               docker -v
-               value=`echo $?`
-               if [ $value -eq 127 ]
-            then
-                Docker
-            else 
-                 echo "Docker Already Installed in Your System"
-                fi
- #Checking O.S Compatability to Install K8s
+              Docker
+             #Checking O.S Compatability to Install K8s
 	os=` cat /etc/lsb-release |grep = | awk '{print $2}' | sed 's/[^0-9,.]*//g'`
 	min=16.04
 	if (( ${os%%.*} < ${min%%.*}  || ( ${os%%.*} == ${min%%.*} && ${os##*.} < ${min##*.} ) )); then
@@ -285,7 +277,7 @@ function Docker(){
         then
         echo "installing Docker"
         sudo apt-get update
-        sudo apt-get install \ apt-transport-https \ ca-certificates \ curl \gnupg-agent \ software-properties-common
+        sudo apt-get install  apt-transport-https  ca-certificates  curl gnupg-agent  software-properties-common
         curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
         sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" -y
         sudo apt-get update
