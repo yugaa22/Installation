@@ -90,16 +90,8 @@ function GCS(){
         hal config storage edit --type gcs
 }
 function Minio(){
-        echo "Please  confirm that you have 'Old-Minio-setup' or need  'New-Minio-setup' "
-        echo "please select '1' to set New-Minio-SetUp else press any key to continue"
-        read  response
-        if [ $response -eq 1 ]
-          then
-                echo "installing Minio"
-				Minio-SetUp
-        else
-       echo "Please provide your previous setup details"
-       echo "Enter Minio User_name"
+        Minio-SetUp
+         echo "Enter Minio User_name"
 	    read User_name
         fi
         ENDPOINT=`hostname -I | awk '{print $1}'`
