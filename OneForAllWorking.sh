@@ -177,14 +177,13 @@ case "$store" in
    ;;
 esac
 
-echo "Do You Want spinnaker Publicly Accessible Presss 1 or You will Continue as Localhost Only Press Any Key Other Key"
-read pub
-   if [ $pub -eq 1 ]
+   if [ $ENV -eq 3 ]
     then 
-         URLOVERRIDE
-    else
-          echo "Now YOUR spinnaker Accessible with localhost:9000 by Tunneling into to Your Local System command is: "
-          echo "sudo ssh -i << PATH OF .pem FILE >> -L 8084:localhost:8084 -L 8087:localhost:8087 -L 9000:localhost:9000 $ur@<<IP>>"  
+         echo "Has to test "
+    else 
+          URLOVERRIDE
+          #echo "Now YOUR spinnaker Accessible with localhost:9000 by Tunneling into to Your Local System command is: "
+          #echo "sudo ssh -i << PATH OF .pem FILE >> -L 8084:localhost:8084 -L 8087:localhost:8087 -L 9000:localhost:9000 $ur@<<IP>>"  
  fi 
 
 if [ $ENV -eq 2 ] 
