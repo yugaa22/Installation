@@ -209,9 +209,10 @@ echo "done Spinnaker"
 
 function URLOVERRIDE(){
 	   echo "Enter URL of YOur VM && Make Sure the PORTS(8084,8087,9000) are opened in FireWallRules"
-           read $URL
+           read URL
            hal config security ui edit  --override-base-url http://$URL:9000
 	   hal config security api edit --override-base-url http://$URL:8084
+	   mkdir ~/.hal/default/service-settings/
 	   touch ~/.hal/default/service-settings/deck.yml
 	   touch  ~/.hal/default/service-settings/gate.yml
            echo "host: 0.0.0.0 " >>~/.hal/default/service-settings/deck.yml
