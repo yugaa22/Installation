@@ -23,3 +23,18 @@ auth:
 # hal config security authz ldap edit --url ldaps://35.230.138.249:389/dc=local,dc=opsmx,dc=com
 # hal config security authz enable/disable
 #  hal config security authz edit --type ldap
+
+
+auth:
+   groupMembership:
+    service: ldap
+    ldap:
+      url: ldap://ldap.opsmx.net:389
+      managerDn: CN=opsmxadmin,CN=Users,dc=hyd,dc=opsmx,dc=net
+      managerPassword: OpsMx@789
+      groupSearchBase: OU=OpsMx_User,dc=hyd,dc=opsmx,dc=net
+      groupSearchFilter: member={0}
+      groupRoleAttributes: cn
+      userDnPattern: CN={0},CN=Users,dc=hyd,dc=opsmx,dc=net
+      userSearchBase: DC=hyd,DC=opsmx,DC=net
+      userSearchFilter: (|(distinguishedName=CN={0},CN=Users,DC=hyd,DC=opsmx,DC=net)(distinguishedName=CN={0},OU=Dev,OU=OpsMx_User,DC=hyd,DC=opsmx,DC=net)(distinguishedName=CN={0},OU=Devops,OU=OpsMx_User,DC=hyd,DC=opsmx,DC=net))
