@@ -18,3 +18,13 @@ ldap:
 #hal config security authn ldap edit --manager-dn 'CN=Sandesh,CN=Users,dc=local,dc=opsmx,dc=com' --user-search-filter '(|(distinguishedName=CN={0},CN=Users,DC=local,DC=opsmx,DC=com)(distinguishedName=CN={0},OU=Employees,OU=Opsmx User,DC=local,DC=opsmx,DC=com))' --url ldaps://35.230.138.249:389/dc=local,dc=opsmx,dc=com
 #hal config security authn ldap edit --manager-dn 'CN=opsmxadmin,CN=Users,dc=hyd,dc=opsmx,dc=net' --user-search-filter '(|(distinguishedName=CN={0},CN=Users,DC=hyd,DC=opsmx,DC=net)(distinguishedName=CN={0},OU=dev,DC=hyd,DC=opsmx,DC=net))' --url ldaps://ldap.opsmx.net:389/dc=hyd,dc=opsmx,dc=net
 #hal config security authn ldap edit --manager-password
+
+
+ldap:
+  url: ldap://ldap.opsmx.net:389
+  managerDn: CN=opsmxadmin,CN=Users,dc=hyd,dc=opsmx,dc=net
+  managerPassword: OpsMx@789
+  groupSearchFilter: member={0}
+  groupRoleAttributes: cn
+  userSearchFilter: (|(distinguishedName=CN={0},CN=Users,DC=hyd,DC=opsmx,DC=net)(distinguishedName=CN={0},OU=Dev,OU=OpsMx_User,DC=hyd,DC=opsmx,DC=net)(distinguishedName=CN={0},OU=Devops,OU=OpsMx_User,DC=hyd,DC=opsmx,DC=net))
+  userSearchBase: DC=hyd,DC=opsmx,DC=net
