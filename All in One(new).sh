@@ -192,8 +192,7 @@ elif [ $ENV -eq 3 ]
       deckPort=`kubectl get svc/$deck -o yaml -n $NAMESPACE | grep nodePort | sed 's/[^0-9]*//g' `
       gatePort=`kubectl get svc/$gate -o yaml -n $NAMESPACE | grep nodePort | sed 's/[^0-9]*//g'`
 
-     echo "Enter URL of YOur VM &&  ip  like format::  xx.xx.xx.xx "
-     read URL
+      URL=`host myip.opendns.com resolver1.opendns.com | grep "myip.opendns.com has" | awk '{print $4}'`
            hal config security ui edit  --override-base-url http://$URL:$deckPort
 	   hal config security api edit --override-base-url http://$URL:$gatePort
            hal config version edit --version $(hal version latest -q) 
@@ -208,8 +207,7 @@ echo "done Spinnaker"
 }
 
 function URLOVERRIDE(){
-	   echo "Enter URL of YOur VM &&  ip  like format::  xx.xx.xx.xx "
-           read URL
+	   URL=`host myip.opendns.com resolver1.opendns.com | grep "myip.opendns.com has" | awk '{print $4}'`
            hal config security ui edit  --override-base-url http://$URL:9000
 	   hal config security api edit --override-base-url http://$URL:8084
 	   mkdir ~/.hal/default/service-settings/
