@@ -21,8 +21,8 @@ function k8s_v2(){
            echo "Enter Kubernetes Account Name"
            read ACCOUNT
 	  Kubernetes
-          CONTEXT=$(kubectl config current-context)
-           hal config provider kubernetes account add $ACCOUNT  --provider-version v2  --context $CONTEXT
+          
+           hal config provider kubernetes account add $ACCOUNT  --provider-version v2  
            hal config features edit --artifacts true
 }
 function Aws(){
@@ -43,9 +43,8 @@ function localDebian(){
         hal config deploy edit --type localdebian
 }
 function LocalGit(){
-        echo "localgit"
-        Git
-	
+        
+        Git	
         sudo add-apt-repository ppa:openjdk-r/ppa -y
         sudo apt-get update && apt-get install openjdk-8-jdk -y
         curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.34.0/install.sh | bash
@@ -94,18 +93,26 @@ function Minio(){
          echo "Enter Minio User_name"
 	    read User_name
          ENDPOINT=`hostname -I | awk '{print $1}'`
-	ENDPOINT=http://$ENDPOINT:9000
+	ENDPOINT=http://$ENDPOINT:9001
         hal config storage s3 edit --endpoint $ENDPOINT  --access-key-id $User_name --secret-access-key
         sudo hal config storage edit --type s3
         unset ENDPOINT
         unset User_name
 }
 function S3(){
-        echo "Have to check with aws"
         hal config storage s3 edit--access-key-id $ACCESS_KEY_ID  --secret-access-key --region us-west-2 --bucket  $BUCKET_NAME
         hal config storage edit --type s3
         unset BUCKET_NAME
         unset ACCESS_KEY_ID
+}
+
+function Azure(){
+        echo "Enter Your Azure_Storage_Account_name"
+  	read STORAGE_ACCOUNT_NAME
+        echo "Enter Your Azure_Storage_Account_Access_key"
+  	read STORAGE_ACCOUNT_KEY
+	hal config storage azs edit --storage-account-name $STORAGE_ACCOUNT_NAME --storage-account-key $STORAGE_ACCOUNT_KEY
+        hal config storage edit --type azs
 }
                                                                 #1. Install Halyard
 echo "Choose your options for Install Halyard  "
@@ -162,6 +169,7 @@ echo "Choose your options for Choose  Storage "
 echo "1. GCS"
 echo "2. Minio"
 echo "3. S3"   
+echo "4. Azure" 
 read store
 
  	
@@ -171,6 +179,8 @@ case "$store" in
    "2") Minio
    ;;
    "3") S3
+   ;;
+   "4") Azure
    ;;
     *) echo "Inappropriate option. Exit !!"
        exit 0
@@ -189,10 +199,11 @@ elif [ $ENV -eq 3 ]
 
       kubectl patch svc $deck --type='json' -p='[{"op": "replace", "path": "/spec/type", "value": "NodePort"}]' -n $NAMESPACE
       kubectl patch svc $gate --type='json' -p='[{"op": "replace", "path": "/spec/type", "value": "NodePort"}]' -n $NAMESPACE
+
       deckPort=`kubectl get svc/$deck -o yaml -n $NAMESPACE | grep nodePort | sed 's/[^0-9]*//g' `
       gatePort=`kubectl get svc/$gate -o yaml -n $NAMESPACE | grep nodePort | sed 's/[^0-9]*//g'`
 
-      URL=`host myip.opendns.com resolver1.opendns.com | grep "myip.opendns.com has" | awk '{print $4}'`
+    URL=`host myip.opendns.com resolver1.opendns.com | grep "myip.opendns.com has" | awk '{print $4}'`
            hal config security ui edit  --override-base-url http://$URL:$deckPort
 	   hal config security api edit --override-base-url http://$URL:$gatePort
            hal config version edit --version $(hal version latest -q) 
@@ -207,14 +218,14 @@ echo "done Spinnaker"
 }
 
 function URLOVERRIDE(){
-	   URL=`host myip.opendns.com resolver1.opendns.com | grep "myip.opendns.com has" | awk '{print $4}'`
+	    URL=`host myip.opendns.com resolver1.opendns.com | grep "myip.opendns.com has" | awk '{print $4}'`
            hal config security ui edit  --override-base-url http://$URL:9000
 	   hal config security api edit --override-base-url http://$URL:8084
-	   mkdir ~/.hal/default/service-settings/
-	   touch ~/.hal/default/service-settings/deck.yml
-	   touch  ~/.hal/default/service-settings/gate.yml
-           echo "host: 0.0.0.0 " >>~/.hal/default/service-settings/deck.yml
-           echo "host: 0.0.0.0 " >>~/.hal/default/service-settings/gate.yml
+	   sudo  mkdir ~/.hal/default/service-settings/
+	   sudo touch ~/.hal/default/service-settings/deck.yml
+	   sudo touch  ~/.hal/default/service-settings/gate.yml
+           sudo echo "host: 0.0.0.0 " | sudo tee -a ~/.hal/default/service-settings/deck.yml
+           sudo echo "host: 0.0.0.0 " | sudo tee -a ~/.hal/default/service-settings/gate.yml
          echo "Now Your Spinnaker Accessible with $URL:9000"
            
 }
@@ -230,16 +241,14 @@ function Kubernetes(){
 }
                                                           #Installing  Docker & Kubernetes With Single Node
 function Dev-SingleNode-K8s-Cluster(){
-             echo "Do You Have Docker Installed on Your System which is Pre-Requirement for K8s"
               Docker
-             #Checking O.S Compatability to Install K8s
 	os=` cat /etc/lsb-release |grep = | awk '{print $2}' | sed 's/[^0-9,.]*//g'`
 	min=16.04
 	if (( ${os%%.*} < ${min%%.*}  || ( ${os%%.*} == ${min%%.*} && ${os##*.} < ${min##*.} ) )); then
   		  echo "For Installation of K8s Minimum Requirement of O.S  is 16.04"
    		 exit 1
 	fi
-             echo "installing K8s-cluster"
+        echo "installing K8s-cluster"
         Kubernetes
         sudo apt-get install -y kubelet kubeadm kubernetes-cni --allow-unauthenticated
         FIND_IP="http://checkip.amazonaws.com/"
@@ -336,7 +345,7 @@ function Java(){
    	 echo found java executable in PATH
  	   _java=java
 	 elif [[ -n "$JAVA_HOME" ]] && [[ -x "$JAVA_HOME/bin/java" ]];  then
-   	 echo found java executable in JAVA_HOME     
+   	 echo found java executable in JAVA_HOME  
   	  _java="$JAVA_HOME/bin/java"		
 	else
     	echo "installing openJdk"
@@ -372,7 +381,7 @@ function Minio-SetUp(){
         echo   "MINIO_VOLUMES=\"/usr/local/share/minio/\"
                 MINIO_OPTS=\"-C /etc/minio --address 0.0.0.0:9001\"
                 MINIO_ACCESS_KEY=$User_name
-                MINIO_SECRET_KEY=$Secret_key " >> minio.txt
+                MINIO_SECRET_KEY=$Secret_key " | sudo tee -a  minio.txt
 
         sudo mv minio.txt /etc/default/minio
         curl -O https://raw.githubusercontent.com/minio/minio-service/master/linux-systemd/minio.service
