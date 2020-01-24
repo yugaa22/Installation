@@ -1,0 +1,360 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: spin
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  # This name uniquely identifies the Deployment
+  name: minio-deployment
+  namespace: spin
+spec:
+  strategy:
+    type: Recreate
+  selector:
+     matchLabels:
+        app: minio
+  template:
+    metadata:
+      labels:
+        # Label is used as selector in the service.
+        app: minio
+    spec:
+      # Refer to the PVC created earlier
+      containers:
+      - name: minio
+        # Pulls the default MinIO image from Docker Hub
+        image: minio/minio
+        args:
+        - server
+        - /storage
+        env:
+        # MinIO access key and secret key
+        - name: MINIO_ACCESS_KEY
+          value: opsmx
+        - name: MINIO_SECRET_KEY
+          value: opsmx123
+        ports:
+        - containerPort: 9000
+        # Mount the volume into the pod
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: minio-service
+  namespace: spin
+spec:
+  type: NodePort
+  ports:
+    - port: 9000
+      targetPort: 9000
+      protocol: TCP
+  selector:
+    app: minio
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: halconfig
+  namespace: spin
+data:
+  config: |
+    currentDeployment: default
+    deploymentConfigurations:
+    - name: default
+      version: 1.17.2
+      providers:
+        appengine:
+          enabled: false
+          accounts: []
+        aws:
+          enabled: false
+          accounts: []
+          defaultKeyPairTemplate: '{{name}}-keypair'
+          defaultRegions:
+          - name: us-west-2
+          defaults:
+            iamRole: BaseIAMRole
+        azure:
+          enabled: false
+          accounts: []
+          bakeryDefaults:
+            templateFile: azure-linux.json
+            baseImages: []
+        dcos:
+          enabled: false
+          accounts: []
+          clusters: []
+        google:
+          enabled: false
+          accounts: []
+          bakeryDefaults:
+            templateFile: gce.json
+            baseImages: []
+            zone: us-central1-f
+            network: default
+            useInternalIp: false
+        kubernetes:
+          enabled: true
+          accounts:
+          - name: my-k8s-v2-account
+            requiredGroupMembership: []
+            providerVersion: V2
+            permissions: {}
+            dockerRegistries: []
+            configureImagePullSecrets: true
+            cacheThreads: 1
+            namespaces: []
+            omitNamespaces: []
+            kinds: []
+            omitKinds: []
+            customResources: []
+            cachingPolicies: []
+            kubeconfigFile: /home/spinnaker/staging/.kube/config
+            oauthScopes: []
+            oAuthScopes: []
+            liveManifestCalls: true
+            onlySpinnakerManaged: false
+          primaryAccount: my-k8s-v2-account
+        openstack:
+          enabled: false
+          accounts: []
+          bakeryDefaults:
+            baseImages: []
+        oraclebmcs:
+          enabled: false
+          accounts: []
+      deploymentEnvironment:
+        size: SMALL
+        customSizing: {}
+        type: Distributed
+        accountName: my-k8s-v2-account
+        updateVersions: true
+        location: spin
+        consul:
+          enabled: false
+        vault:
+          enabled: false
+        gitConfig:
+          upstreamUser: spinnaker
+      persistentStorage:
+        persistentStoreType: s3
+        azs: {}
+        gcs: {}
+        redis: {}
+        s3:
+          bucket: test
+          rootFolder: front50
+          region: us-west-2
+          endpoint: http://minio-service.spin:9000
+          accessKeyId: opsmx
+          secretAccessKey: opsmx123
+        oraclebmcs: {}
+      features:
+        auth: false
+        fiat: false
+        chaos: false
+        entityTags: false
+        jobs: false
+        managedPipelineTemplatesV2UI: true
+      metricStores:
+        datadog:
+          enabled: false
+        prometheus:
+          enabled: false
+          add_source_metalabels: true
+        stackdriver:
+          enabled: false
+        period: 30
+        enabled: false
+      notifications:
+        slack:
+          enabled: false
+        twilio:
+          enabled: false
+          baseUrl: https://api.twilio.com/
+      timezone: America/Los_Angeles
+      ci:
+        jenkins:
+          enabled: true
+          masters:
+          - name: opsmx-jenkins-master
+            permissions: {}
+            address: http://35.232.191.31:8282
+            username: opsmx
+            password: Bumblebee@321$
+            csrf: true
+        travis:
+          enabled: false
+          masters: []
+      security:
+        apiSecurity:
+          ssl:
+            enabled: false
+        uiSecurity:
+          ssl:
+            enabled: false
+        authn:
+          oauth2:
+            enabled: false
+            client: {}
+            resource: {}
+            userInfoMapping: {}
+          saml:
+            enabled: false
+          ldap:
+            enabled: false
+            url: ldap://34.93.27.65:389
+            userDnPattern: CN={0},CN=Users,DC=opsmx,DC=com
+          x509:
+            enabled: false
+          enabled: false
+        authz:
+          groupMembership:
+            service: EXTERNAL
+            google:
+              roleProviderType: GOOGLE
+            github:
+              roleProviderType: GITHUB
+            file:
+              roleProviderType: FILE
+          enabled: false
+      artifacts:
+        gcs:
+          enabled: false
+          accounts: []
+        github:
+          enabled: false
+          accounts:
+          - name: opsmx_account
+            username: phanikumarp
+            password: Kumar@1612
+        http:
+          enabled: false
+          accounts: []
+      pubsub:
+        google:
+          enabled: false
+          subscriptions: []
+      canary:
+        enabled: false
+        serviceIntegrations:
+        - name: google
+          enabled: false
+          accounts: []
+          gcsEnabled: false
+          stackdriverEnabled: false
+        - name: prometheus
+          enabled: false
+          accounts: []
+        - name: datadog
+          enabled: false
+          accounts: []
+        - name: aws
+          enabled: false
+          accounts: []
+          s3Enabled: false
+        reduxLoggerEnabled: true
+        defaultJudge: NetflixACAJudge-v1.0
+        stagesEnabled: true
+        templatesEnabled: true
+        showAllConfigsEnabled: true
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kubeconfig
+  namespace: spin
+data:
+  config: |
+      apiVersion: v1
+      clusters:
+      - cluster:
+          certificate-authority-data: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUN5RENDQWJDZ0F3SUJBZ0lCQURBTkJna3Foa2lHOXcwQkFRc0ZBREFWTVJNd0VRWURWUVFERXdwcmRXSmwKY201bGRHVnpNQjRYRFRJd01ERXlNVEExTVRZME5sb1hEVE13TURFeE9EQTFNVFkwTmxvd0ZURVRNQkVHQTFVRQpBeE1LYTNWaVpYSnVaWFJsY3pDQ0FTSXdEUVlKS29aSWh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBTTAwCnRVYmtjR01iaXQ3a21MQUdSQkozcU8vODhNY05CL2FoVUtka2ZXdm9QZlp2cnNGbzVLN2dteWc3aVFkT2lxemIKeklGVlJxVm93RUNiUm9JUHNIdlFPOWZvY0ZONGZnR0lGK1pkY3VxYkhHOFhBTmlzK2pkRkdkbHM4a2paWE83UQpMWVF1QWVZT2t5S09qSllObWVNZlNkWHJZaUlCbXcvOTZLYW05WjBWTW85clkrTUUvZmNUYm54YW01ZmVrOEVXCnk4NjYxWkE5SU82ekJhOXBMQnExZEZLTzhKWWpJb3NzZkdoR0thUnJrOFpzQzZGaWJ3MkRsK0pyaVNibnhBVkYKWEVXNHNyelpFQW04TzF4N1hUQ2xjNjR6c2tLZXhueU1SWjBxenJkQ1VTdm1NOHNJVmw1SHUxVHR4ampLL2t2cQpVM0FGNmFWcHVGQmpZcUhadHJFQ0F3RUFBYU1qTUNFd0RnWURWUjBQQVFIL0JBUURBZ0trTUE4R0ExVWRFd0VCCi93UUZNQU1CQWY4d0RRWUpLb1pJaHZjTkFRRUxCUUFEZ2dFQkFMVXNHYldnU3pyQWsvSVFQdFYzUE5qbDcrNXAKNWFpZlFQcUhiMWc2WS9FTUJkQWxuelZndjBlVzhnaExXeTNLMHVEOUFZUEpqbHFJdmRhUVNkTHA1b2xJUFAzZgoyY3cyTENic3A5d2xVNStWZElDMGtVUHB3M2hjZHVialNWRzNHMXl6cXNSK2xWWU1EVGp4RkJrWmZuQ2NpNFoyCnh2VXVjL1N4UlVDZVhiMXgwdytjNXdIU25yaE10ZHJtOTAydnJRYXh6RXFYN3VxMHhjZlNZT0I4U3hQU2xucnUKNkF2YXk0Y29aYTErQVZvUVBZNm43QWZKNEdlOEdNSWVVU3JRek93U05SdkxJaEZpYnVxaHM4cnprbkJpTWVVWQpDVHF2N2htYzVEY1Y3QUdnemtQM0c3UHhLUlRadU9paUNOZVJuR1l2dkhhQmk5L3FnbEpRLzNnS2lKcz0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
+          server: https://172.16.9.25:6443
+        name: kubernetes
+      contexts:
+      - context:
+          cluster: kubernetes
+          user: kubernetes-admin
+        name: kubernetes-admin@kubernetes
+      current-context: kubernetes-admin@kubernetes
+      kind: Config
+      preferences: {}
+      users:
+      - name: kubernetes-admin
+        user:
+          client-certificate-data: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUM4akNDQWRxZ0F3SUJBZ0lJR2RPRmpmNkRaTkl3RFFZSktvWklodmNOQVFFTEJRQXdGVEVUTUJFR0ExVUUKQXhNS2EzVmlaWEp1WlhSbGN6QWVGdzB5TURBeE1qRXdOVEUyTkRaYUZ3MHlNVEF4TWpBd05URTJOVGhhTURReApGekFWQmdOVkJBb1REbk41YzNSbGJUcHRZWE4wWlhKek1Sa3dGd1lEVlFRREV4QnJkV0psY201bGRHVnpMV0ZrCmJXbHVNSUlCSWpBTkJna3Foa2lHOXcwQkFRRUZBQU9DQVE4QU1JSUJDZ0tDQVFFQXpqM01zeXkwVTZFeGMwWTkKSkgxRkp4MkkxZ0NpY2NRU0hPalEzVy9PeE1sdDZPZitjcERMZXRjVEtqK09Bc05vZTljTzJQc3RGWGtOamNsMgpGcU9SRitFaEZNaldUK2Q2cEwrb2hyNzdEcGR0RUFBYmlsTXBoYjlnNVZ4V2JwMjZIeEdnVFdKajI3RXExM2p1CmovQ3hOUiswZjBqT2k0SkFqUXFmaGloM1Bhd0RsLzl0YWgxY3BhSjBsdHJPeFdmYmw0RTc1c1hvd1RtU3BuankKUWhESWREMzkrTVpzNVFxVXl4R2ZDcmhtNGRVcDByeWNEZ0F5YVBEYll4RG1YWDdlTWZCTHdqSXlDcWYwdndIQgpLUG92NnpMMXJrM0NLSFZneXRoRjQycitvMUFwdGZ0K3E1T2FUNWg1ODJsUHIrNFpEdFIvNlo5VEJ5Z3ZoQ0VBCjFBZ2p2d0lEQVFBQm95Y3dKVEFPQmdOVkhROEJBZjhFQkFNQ0JhQXdFd1lEVlIwbEJBd3dDZ1lJS3dZQkJRVUgKQXdJd0RRWUpLb1pJaHZjTkFRRUxCUUFEZ2dFQkFDV1JzdU1MejlyN01Oa3JtV3o1SWp6S21XSmtPVUNmM09LaApwSFcxa2RLT255SkhVUGU4UlByRkFlakI1ZTRpcitpZks5MVhmaDFJVitHYzcyb3FIKzFHSTJSTVRPd3pPd3l4CjZyckVIL1hpd1A1ZTJvaDJiZzE3em9nWUFab1dMQTVXbXhXdHZLc3lKUGV2b0U4cjNOZFY2cTNad1FCR1NlYXUKaGZxS21ReC9Db2p6VHdkU1hVUUZuYmErbWMwbXExTUNtQktmNXZDZmtCRTV1Vm9ubCtlVGs2c3l4cXBGS2t5cQoya2lSZEVad25rMlArSklzaFhRaVBYK2R0T0pLYVoxdDZnSlU4UFBLb1FqNWNuNkUwVDlHSnJBcU1NVG9Xc2EyCm4wRUFVVG5IRnZqZEJNWktzSDhZSS9zbFF3V1l3SVJrQnh6aEQwR0xTNEt4WkdLZjU0Yz0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
+          client-key-data: LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlFcEFJQkFBS0NBUUVBemozTXN5eTBVNkV4YzBZOUpIMUZKeDJJMWdDaWNjUVNIT2pRM1cvT3hNbHQ2T2YrCmNwRExldGNUS2orT0FzTm9lOWNPMlBzdEZYa05qY2wyRnFPUkYrRWhGTWpXVCtkNnBMK29ocjc3RHBkdEVBQWIKaWxNcGhiOWc1VnhXYnAyNkh4R2dUV0pqMjdFcTEzanVqL0N4TlIrMGYwak9pNEpBalFxZmhpaDNQYXdEbC85dAphaDFjcGFKMGx0ck94V2ZibDRFNzVzWG93VG1TcG5qeVFoRElkRDM5K01aczVRcVV5eEdmQ3JobTRkVXAwcnljCkRnQXlhUERiWXhEbVhYN2VNZkJMd2pJeUNxZjB2d0hCS1BvdjZ6TDFyazNDS0hWZ3l0aEY0MnIrbzFBcHRmdCsKcTVPYVQ1aDU4MmxQcis0WkR0Ui82WjlUQnlndmhDRUExQWdqdndJREFRQUJBb0lCQUJpb0JML3ErVWdDUG1JMApwSHluU1V3cTJNQVU1VmJLaFF2VnZacXJra0d1ZnloWUMvQndaUk16Z1VRTXd4S0xnQU5HSzYwL0loMnVFalBBClFSRGx6eVBXczFqRHhmTlpqaTBDQ01qTExrS0pVZTJXeGJRY3l4c0ZUVFUrZThyUHFuK3FZTXEvbDRhZFFLenYKOVQxYUhpVm11L0ozcHRIQTZheXk5MjFYaXlIaEpyOGRVd3ZUUGVrMGF1R3BSd3h4UG44OXh3T1oxc1JpZnQregprd3p0ME1DeEZLSHhrMU1PT2MzQytGL2xaRjdZTDhONk5paVVZcUNMOW5HN2ZUbEVZUlVoclhKejJwcW9uWDI4CkhsYnI3cmdqdGNtWHdQSEhmV3BZYnRkSWpRV0YrNWo4RGdyMmkxUTlNL1VOMi9jaUF1U0s2Z3pCTnBVTUgxTWYKclYvTmEwRUNnWUVBNDFJaERkbGZCek1keE9qeWMyRjZYaGttZ0diNGtoUU9tNW9ZZVc3U00vVTdjZEs3R3FvSQovQURlbVhQbWhMYWViVkNaTFhRNUxXWjRWSmNxZEhXem54cndhbk04SzNGbHhzNUF0Z2NNY0JHNDllZ3VkdERmCnhSc2FRSXBCbDBVVE4zTmhzN1JWMGNGeldHUFBMekhIK0RQYTJuR3pvRExNeXBJNjJ4ZHQweUVDZ1lFQTZFTGMKUG9iMjd3QUVxc2FTUFBLS0tkMTk2Zkw3ZnFsM2s2NDZpN0c1dEtuUmRlMzRFVWx1SElnS3cxMFBYZlpsQS9ISgpNdGpSL2NJZDIxVjFuNWR0Mmw5SU00TUFMMzFaQzltaU9zVVBnMmFFQ0VxNldOb0pmd0VTa3ltTEJmOWFXVkNRCldXUUd0K1lObVhjN3V6eVN2RXk0SmdTME5ROGxvak5QNVlSUCt0OENnWUJhQkV2U2tDRnhXR3lSYlMyVlF5U1IKM3FQQWRRWTUwbmQyWnE4S1p6Z1dHeVpQRElQTEswb2pnTFNsVDZBWkxiZk8wZnZXWkEvQVNyT2J5OENrSFhmagpxV2RLd0Jjem5OUVF4ZHdhT1BCVDhMQ3RzQ08yS1VCemJTZ1lKcWVTbjJmY3JYUWpGV1ptaVpTRGpBS2ZUYmRDCk1rYVgraTZIWVpaM0lURHRVWG5NQVFLQmdRQ1c0WWhPSGtNZjg3VVVjN2JnWFBjZ1IwRGF6L3hNeGk1bUE1TUkKMk1XNDlYQ2EyYUtES0Y2ZHJrcS9xeDZtZmNBVmxlYU1YNG5hL1ZXRC9McFNtSDdHazR0RjIxNHRlNUp6UGtoRApRV3pZZ2FwWDhLT3B3TXJXZEkzcWg5eEdZeUlBVDNQV2ZrSlhDTjNneWpKRmFnNHd3TzRIMUpwMHRZaFBIR0pVCnlXVmpwUUtCZ1FDaVRRYXlzdEsrVkJuZzZ6WC9nbUhObC96M2QxZ0xZdWZVZS8zK0Y4a21CY1NKNUhycVJWMnIKY3BJeFdqTmNDcHZmUjNDbjI2MnpkSXJEdFJWcWNUSXV3bXBLOW1JcnFFWFZaR0lCV3F4djVKZXgrNStmYWN0LwpYNDM4RDBoL29vTHowZ1I1WEppaW1kVFJ4VHQyRzZBOHZ4bk1mcHZuTnVmVzlrY24zSmh4TEE9PQotLS0tLUVORCBSU0EgUFJJVkFURSBLRVktLS0tLQo=
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spin-halyard
+  namespace: spin
+  labels:
+    app: spin
+    stack: halyard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: spin
+      stack: halyard
+  template:
+    metadata:
+      labels:
+        app: spin
+        stack: halyard
+    spec:
+      containers:
+      - name: halyard-daemon
+        # todo - make :stable or digest of :stable
+        image: gcr.io/spinnaker-marketplace/halyard:stable
+        imagePullPolicy: Always
+        command:
+        - /bin/sh
+        args:
+        - -c
+        - "cp -R /home/spinnaker/staging/.hal /home/spinnaker/.hal && cp -R /home/spinnaker/staging/.kube /home/spinnaker/.kube && /opt/halyard/bin/halyard"
+        readinessProbe:
+          exec:
+            command:
+            - wget
+            - -q
+            - --spider
+            - http://localhost:8064/health
+        ports:
+        - containerPort: 8064
+        volumeMounts:
+        - name: halconfig
+          mountPath: /home/spinnaker/staging/.hal/config
+          subPath: config
+        - name: kubeconfig
+          mountPath: /home/spinnaker/staging/.kube/config
+          subPath: config
+      volumes:
+      - name: halconfig
+        configMap:
+          defaultMode: 420
+          name: halconfig
+      - name: kubeconfig
+        configMap:
+          defaultMode: 420
+          name: kubeconfig
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spin-halyard
+  namespace: spin
+spec:
+  ports:
+    - port: 8064
+      targetPort: 8064
+      protocol: TCP
+  selector:
+    app: spin
+    stack: halyard
+  type: ClusterIP
