@@ -358,3 +358,29 @@ spec:
     app: spin
     stack: halyard
   type: ClusterIP
+  ---
+  apiVersion: batch/v1
+kind: Job
+metadata:
+  name: hal-deploy-apply
+  namespace: sp
+  labels:
+    app: job
+    stack: hal-deploy
+spec:
+  template:
+    metadata:
+      labels:
+        app: job
+        stack: hal-deploy
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: hal-deploy-apply
+        # todo use a custom image
+        image: gcr.io/spinnaker-marketplace/halyard:stable
+        command:
+        - /bin/sh
+        args:
+        - -c
+        - "hal deploy apply --daemon-endpoint http://spin-halyard.sp:8064"
