@@ -1,63 +1,53 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: sp
+  name: sp1
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  # This name uniquely identifies the Deployment
   name: minio-deployment
-  namespace: sp
+  namespace: sp1
 spec:
+  selector:
+    matchLabels:
+      app: minio
   strategy:
     type: Recreate
-  selector:
-     matchLabels:
-        app: minio
   template:
     metadata:
       labels:
-        # Label is used as selector in the service.
         app: minio
     spec:
-      # Refer to the PVC created earlier
       containers:
-      - name: minio
-        # Pulls the default MinIO image from Docker Hub
-        image: minio/minio
-        args:
-        - server
-        - /storage
-        env:
-        # MinIO access key and secret key
-        - name: MINIO_ACCESS_KEY
-          value: opsmx
-        - name: MINIO_SECRET_KEY
-          value: opsmx123
-        ports:
-        - containerPort: 9000
-        # Mount the volume into the pod
+        - args:
+            - server
+            - /storage
+          env:
+            - name: MINIO_ACCESS_KEY
+              value: opsmx
+            - name: MINIO_SECRET_KEY
+              value: opsmx123
+          image: minio/minio
+          name: minio
+          ports:
+            - containerPort: 9000
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: minio-service
-  namespace: sp
+  namespace: sp1
 spec:
-  type: NodePort
   ports:
     - port: 9000
-      targetPort: 9000
       protocol: TCP
+      targetPort: 9000
   selector:
     app: minio
+  type: NodePort
 ---
 apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: halconfig
-  namespace: sp
 data:
   config: |
     currentDeployment: default
@@ -131,7 +121,7 @@ data:
         type: Distributed
         accountName: my-k8s-v2-account
         updateVersions: true
-        location: sp
+        location: sp1
         consul:
           enabled: false
         vault:
@@ -260,42 +250,46 @@ data:
         stagesEnabled: true
         templatesEnabled: true
         showAllConfigsEnabled: true
+kind: ConfigMap
+metadata:
+  name: halconfig
+  namespace: sp1
 ---
 apiVersion: v1
+data:
+  config: |
+    apiVersion: v1
+    clusters:
+    - cluster:
+        certificate-authority-data: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUN5RENDQWJDZ0F3SUJBZ0lCQURBTkJna3Foa2lHOXcwQkFRc0ZBREFWTVJNd0VRWURWUVFERXdwcmRXSmwKY201bGRHVnpNQjRYRFRJd01ERXpNVEExTWpJeE5Gb1hEVE13TURFeU9EQTFNakl4TkZvd0ZURVRNQkVHQTFVRQpBeE1LYTNWaVpYSnVaWFJsY3pDQ0FTSXdEUVlKS29aSWh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBTGZuCk5aTUs1N2hJSVpCQ3pKRngrVXRORnFoVWR4TzlRSFBIYVFZQ2ZHWStvZDk2U3hPcVZEUjFQZXpITk9aLzZlVGYKbmNHamZrUDRWMnRlZWtwQXRidkdRK3JVYUpjdHp3bVhtUDFVOWtQQ1FMeGhPZGRJYlZXWTVxZkU3Y1N0bVkxUgpvZlNMSnVScFk4SW0rcFZRNGhzSCthZys2UTlBM28vVUladFNUQTJPV1R0K2tBa0xXN2todXNDaE85azFvalovCm9QUSthWWpqYnllY2lmbHBVYXM2Tjk2dXNaTW1YT0p5czZWZXNQUFBBZVVoUU9MV0I3dVQzTlVZQWt5U0NqNXIKUGd4aFpOb3hVOW5DT090RnZvNC9ONEFDR1BQWndoMW9vc2hIMUpTbmZUcFFaVmJvYzgreCtUTG0zdUZIZDkxbApkU2dPeEF5SFVoTXVSQXlGSmFVQ0F3RUFBYU1qTUNFd0RnWURWUjBQQVFIL0JBUURBZ0trTUE4R0ExVWRFd0VCCi93UUZNQU1CQWY4d0RRWUpLb1pJaHZjTkFRRUxCUUFEZ2dFQkFMYjZ4eVJHbisvL1QyLzhneEswd2JIendGVFYKMVhvakxYdVBkYW5Zb1NLYUdiNEFHcmRzdTF1bFF1VGpLVmFJM3pYSTNmQUZLZXF4N1RRbnNpMWR2c1p1QllSKwpObzVVSWVSL0NneWVKM3BZdTlJRTJ4eEI2YnM4UGhNdGdManJCMktzd0YxYitHL0RVSzZvbDJKZHRhR1haY0FoCjA5eFZzdDl1WElldXp4UU12RnM2Rm81UjVIMUsyRzBHdk5BeVhoUi9aS2lqUkdGZlExQVZXSDVab284Zlk5MVUKUVBGS2pqM1p5b0RVK3FNQUwyQ29HRkE3ZXhDVE9HSlhoSElDMHNlY01YV0J6SElJd1QrRmNtRHA4VlFtc2hmWgoxNUlnZjRqV3YwcXV1WnBVdEtYNDRKZ3pKbEl5aEgvdjRiK0EvaVg5MU9YU0xoZThCRjFJNGQxV2xCMD0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
+        server: https://172.16.4.20:6443
+      name: kubernetes
+    contexts:
+    - context:
+        cluster: kubernetes
+        user: kubernetes-admin
+      name: kubernetes-admin@kubernetes
+    current-context: kubernetes-admin@kubernetes
+    kind: Config
+    preferences: {}
+    users:
+    - name: kubernetes-admin
+      user:
+        client-certificate-data: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUM4akNDQWRxZ0F3SUJBZ0lJR2RIR2JZYVZxSWt3RFFZSktvWklodmNOQVFFTEJRQXdGVEVUTUJFR0ExVUUKQXhNS2EzVmlaWEp1WlhSbGN6QWVGdzB5TURBeE16RXdOVEl5TVRSYUZ3MHlNVEF4TXpBd05USXlNakZhTURReApGekFWQmdOVkJBb1REbk41YzNSbGJUcHRZWE4wWlhKek1Sa3dGd1lEVlFRREV4QnJkV0psY201bGRHVnpMV0ZrCmJXbHVNSUlCSWpBTkJna3Foa2lHOXcwQkFRRUZBQU9DQVE4QU1JSUJDZ0tDQVFFQTN5VW9XeVgyUnJRajNONnIKYkppZEhRM2Z3dTJ6VWtuMTVCa1dWdGk1cEJHVjVRMVB2bzlscldtT2xZdGJWZGd6VzIvbTYxNkg0dC91OXRmdQpUQ0hmMlJFeXFONjZBejJJbXJVRHRNdEt4M0dDYmZheTBkOGJzdW9PQTRidkgyeC9JRkVWTlUvWGxVN2lCRmZ1CkRDZ2gyb3ZXaThRYjNrUi9BZy9ERTV0bXVhbDRHV1UxTXB4V1BlLzdHMW1INUJiMjlqUll5RFl4TElLZHA5NFIKcjNJbUpXRkZYQVhxb3dYQ0FIYTUzUmthc0FKSnBaZnRCZWJlQkJ3NTNnTkpra0NMSWxlK1dVOFhkM0dwRDJvVgpIaFFwZDVTQ0IwYkNyQTBRVEU2cTd5MFdNN0dGQm9mbVJBS0crWGpORzlhQTBzYTc5cmh1N2s3VWVma2lUQnI2ClFGbGFTUUlEQVFBQm95Y3dKVEFPQmdOVkhROEJBZjhFQkFNQ0JhQXdFd1lEVlIwbEJBd3dDZ1lJS3dZQkJRVUgKQXdJd0RRWUpLb1pJaHZjTkFRRUxCUUFEZ2dFQkFHUzNFTjh6SE9QZmdxTUZNNjlTNWtFWjkyY0d6ajNnclNGMwpwMXRUVmpGTWUwYTVzYVlFQUkxOE1XOTZqL3FucEM0OG1xQzNFaW8yVS9iU20yZ2NKWFQ1V25nNjZqYzhFUDlpCnp3eEVIck1PLzZQSE5IVHVMbi9scVd2bVlvTFJvczJ1ZFk0b3IxSnVOVXFzd2hJaHFvRmFlUGUrSStHem9jZEgKQnhaVmZpd1I1NTJXRkZ5NHdod2FHUUoxRXhhQXAvc3NILzgwTXVrR2VZbDN5emlCVldLUmFtSzdENXBOT0VYQgpkUmgxY0o1VHZkUjUxYmxNSEpXOXpKMzRadGJtWDlTU3kyaHBOTG9SU3Q1TXF1amVCUzZtRXZJUWFtcGMxaU1HCnMxdk9xMFpFWWNraGpxNENHeEkvOVM0MTMzb3pEK3Rrd1B4WnhGZ0IvVTVjcnliOWdSWT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
+        client-key-data: LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlFb3dJQkFBS0NBUUVBM3lVb1d5WDJSclFqM042cmJKaWRIUTNmd3UyelVrbjE1QmtXVnRpNXBCR1Y1UTFQCnZvOWxyV21PbFl0YlZkZ3pXMi9tNjE2SDR0L3U5dGZ1VENIZjJSRXlxTjY2QXoySW1yVUR0TXRLeDNHQ2JmYXkKMGQ4YnN1b09BNGJ2SDJ4L0lGRVZOVS9YbFU3aUJGZnVEQ2doMm92V2k4UWIza1IvQWcvREU1dG11YWw0R1dVMQpNcHhXUGUvN0cxbUg1QmIyOWpSWXlEWXhMSUtkcDk0UnIzSW1KV0ZGWEFYcW93WENBSGE1M1JrYXNBSkpwWmZ0CkJlYmVCQnc1M2dOSmtrQ0xJbGUrV1U4WGQzR3BEMm9WSGhRcGQ1U0NCMGJDckEwUVRFNnE3eTBXTTdHRkJvZm0KUkFLRytYak5HOWFBMHNhNzlyaHU3azdVZWZraVRCcjZRRmxhU1FJREFRQUJBb0lCQVFDUTU1SkRUbTJWRUZuUgpqZytIMzdyM0tSRkxoZ3hTdlpDZDVPU3ExT1lJY3hzQnVSazF4K3poSlpEZjc3VUtFL0dWeVI4TmJUK1V4cEpwClhXTnpzUE9xQkE3L3RsTFkwOWFua0RDdDhPM0lnaCtPeFFydVdwR2tKM1dlT0x1RGpuTW5TMEFZZEphc2NLTTQKNnRpOHNEcjdycDlOOTdXWktxWEhjdkRkQktjNm5HbmE3ZDNyYXAyUitYci9kZVY3TFJQMVd2U1l4bU5CUDVKYwpoUytWbWlySTJ2VGJESVNBaVlGTThiQ2pjRWxJL096NGgyNlNzdkxDTFRmS1FFUGZjWnBCaVFQY2VoVExWU2NNCkNjNFdFaFVXckNFdmRhTkpvZmhsVVRPYUc1UVM4d0xGSDdPUlBxSFcyVjhPTUZaamVJdUdQaTFxNEx4dlNwc1QKYVVYN011QUJBb0dCQU90VXlQYzJJQU5IWGw2SWw1VVAySnRmMndLM21sQ29ZbU9DbktHN2JhajNndzVuMklJUgpOQWJNRmxyK0NwUjZGcStvMjNac21RekxJcnRFOS8zZERYaFNGUjdLYWYxOFc0UVgxVVB3dGZMNmo0N3RGVFhaCmNaUk9sQmR2eUdtVXN1S3FTbytBYVphNWwxWTI1ak56SlhOaUJjQ05kTGR5ck9DVThIcVJnWElCQW9HQkFQSysKWVUrYWV4ZE10c0dpVHM5RnB5K1p4YTgycXZ6QkZJWU83Zkdzd3ZTc1lrQ3Z3MDBKZ3hhRHMxWWVSYTR1UjVOMQpPSHNEWjdMTlpaRGpPWWRiZzZUOXNUeVN1SlNad2tuZXRYZXVtYU1oN1pNdk91M3pUNlNjWVJsSVVta2pWbFBHCmZjdUE4a3VwVllNM1lGUDkxdC9BemRrd1pFUHZlSkEzSHk1OFA5aEpBb0dBVEcxSXB5Q28zT2U4dWk3YUs4cnQKcWVoRGxHcFViNFdBRHBsSWpTMzF1ejVIRGRLaitmbmtUNkRRVWRUWFVza2p2UUMxNVl2M1dMUlFIMG1TMEp1TgoyRm13Q2tQcWtDeG0vRXRSTTdObEkvaER6ME1uOUVrZUhmQTNJRFZwZlFDUjZCTXVDOVRFZGZMb04xTzFCMWlKCi9TTUVnemh0ZzNaMnRxa29RR1lwQ0FFQ2dZQnloWDBWZURWUVpjSG5Fck1KdUx2S2lrcW9naXNqT2RoNzhya3gKaHFjbmxkaDQyak5TdWdVZGJ4OEJweUNLcjR6WE5idGkxZFZybHRtdkJIU1V0b2tpSXdvbUlMWnliU1FyZzZXcgpoRFU1c0gwTUxvRW4xOTJnTktMZXNhOG5xU05HUE9RR1NaeUdNNnFEVUhIaXptUThoaExYdjZ2ZUhUR05JR1JXCm93bmYrUUtCZ0Z5c09ZM0xUZTd4c1NDRWlybG9xRlRVbXhtcTRES2xGRGt6Y0dhOWpkWWVBM2JkVktHOXBsTUgKbTN4cEdWYjBSRi9wOVY2cVdiYkMvQ3hsV3FEVUIrbGpsODZPbzhxdzAwbmVlRWhhRTJnNEFOaFhpeWRHYUJXZApRZEs4OUlabTdPdEd6bng1Z3dRclhuQzJ0WHJ4bDczQnZva2NVSVZnUTkxdnJHNTY1UjBiCi0tLS0tRU5EIFJTQSBQUklWQVRFIEtFWS0tLS0tCg==
 kind: ConfigMap
 metadata:
   name: kubeconfig
-  namespace: sp
-data:
-  config: |
-      apiVersion: v1
-      clusters:
-      - cluster:
-          certificate-authority-data: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUN5RENDQWJDZ0F3SUJBZ0lCQURBTkJna3Foa2lHOXcwQkFRc0ZBREFWTVJNd0VRWURWUVFERXdwcmRXSmwKY201bGRHVnpNQjRYRFRJd01ERXpNVEExTWpJeE5Gb1hEVE13TURFeU9EQTFNakl4TkZvd0ZURVRNQkVHQTFVRQpBeE1LYTNWaVpYSnVaWFJsY3pDQ0FTSXdEUVlKS29aSWh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBTGZuCk5aTUs1N2hJSVpCQ3pKRngrVXRORnFoVWR4TzlRSFBIYVFZQ2ZHWStvZDk2U3hPcVZEUjFQZXpITk9aLzZlVGYKbmNHamZrUDRWMnRlZWtwQXRidkdRK3JVYUpjdHp3bVhtUDFVOWtQQ1FMeGhPZGRJYlZXWTVxZkU3Y1N0bVkxUgpvZlNMSnVScFk4SW0rcFZRNGhzSCthZys2UTlBM28vVUladFNUQTJPV1R0K2tBa0xXN2todXNDaE85azFvalovCm9QUSthWWpqYnllY2lmbHBVYXM2Tjk2dXNaTW1YT0p5czZWZXNQUFBBZVVoUU9MV0I3dVQzTlVZQWt5U0NqNXIKUGd4aFpOb3hVOW5DT090RnZvNC9ONEFDR1BQWndoMW9vc2hIMUpTbmZUcFFaVmJvYzgreCtUTG0zdUZIZDkxbApkU2dPeEF5SFVoTXVSQXlGSmFVQ0F3RUFBYU1qTUNFd0RnWURWUjBQQVFIL0JBUURBZ0trTUE4R0ExVWRFd0VCCi93UUZNQU1CQWY4d0RRWUpLb1pJaHZjTkFRRUxCUUFEZ2dFQkFMYjZ4eVJHbisvL1QyLzhneEswd2JIendGVFYKMVhvakxYdVBkYW5Zb1NLYUdiNEFHcmRzdTF1bFF1VGpLVmFJM3pYSTNmQUZLZXF4N1RRbnNpMWR2c1p1QllSKwpObzVVSWVSL0NneWVKM3BZdTlJRTJ4eEI2YnM4UGhNdGdManJCMktzd0YxYitHL0RVSzZvbDJKZHRhR1haY0FoCjA5eFZzdDl1WElldXp4UU12RnM2Rm81UjVIMUsyRzBHdk5BeVhoUi9aS2lqUkdGZlExQVZXSDVab284Zlk5MVUKUVBGS2pqM1p5b0RVK3FNQUwyQ29HRkE3ZXhDVE9HSlhoSElDMHNlY01YV0J6SElJd1QrRmNtRHA4VlFtc2hmWgoxNUlnZjRqV3YwcXV1WnBVdEtYNDRKZ3pKbEl5aEgvdjRiK0EvaVg5MU9YU0xoZThCRjFJNGQxV2xCMD0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
-          server: https://172.16.4.20:6443
-        name: kubernetes
-      contexts:
-      - context:
-          cluster: kubernetes
-          user: kubernetes-admin
-        name: kubernetes-admin@kubernetes
-      current-context: kubernetes-admin@kubernetes
-      kind: Config
-      preferences: {}
-      users:
-      - name: kubernetes-admin
-        user:
-          client-certificate-data: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUM4akNDQWRxZ0F3SUJBZ0lJR2RIR2JZYVZxSWt3RFFZSktvWklodmNOQVFFTEJRQXdGVEVUTUJFR0ExVUUKQXhNS2EzVmlaWEp1WlhSbGN6QWVGdzB5TURBeE16RXdOVEl5TVRSYUZ3MHlNVEF4TXpBd05USXlNakZhTURReApGekFWQmdOVkJBb1REbk41YzNSbGJUcHRZWE4wWlhKek1Sa3dGd1lEVlFRREV4QnJkV0psY201bGRHVnpMV0ZrCmJXbHVNSUlCSWpBTkJna3Foa2lHOXcwQkFRRUZBQU9DQVE4QU1JSUJDZ0tDQVFFQTN5VW9XeVgyUnJRajNONnIKYkppZEhRM2Z3dTJ6VWtuMTVCa1dWdGk1cEJHVjVRMVB2bzlscldtT2xZdGJWZGd6VzIvbTYxNkg0dC91OXRmdQpUQ0hmMlJFeXFONjZBejJJbXJVRHRNdEt4M0dDYmZheTBkOGJzdW9PQTRidkgyeC9JRkVWTlUvWGxVN2lCRmZ1CkRDZ2gyb3ZXaThRYjNrUi9BZy9ERTV0bXVhbDRHV1UxTXB4V1BlLzdHMW1INUJiMjlqUll5RFl4TElLZHA5NFIKcjNJbUpXRkZYQVhxb3dYQ0FIYTUzUmthc0FKSnBaZnRCZWJlQkJ3NTNnTkpra0NMSWxlK1dVOFhkM0dwRDJvVgpIaFFwZDVTQ0IwYkNyQTBRVEU2cTd5MFdNN0dGQm9mbVJBS0crWGpORzlhQTBzYTc5cmh1N2s3VWVma2lUQnI2ClFGbGFTUUlEQVFBQm95Y3dKVEFPQmdOVkhROEJBZjhFQkFNQ0JhQXdFd1lEVlIwbEJBd3dDZ1lJS3dZQkJRVUgKQXdJd0RRWUpLb1pJaHZjTkFRRUxCUUFEZ2dFQkFHUzNFTjh6SE9QZmdxTUZNNjlTNWtFWjkyY0d6ajNnclNGMwpwMXRUVmpGTWUwYTVzYVlFQUkxOE1XOTZqL3FucEM0OG1xQzNFaW8yVS9iU20yZ2NKWFQ1V25nNjZqYzhFUDlpCnp3eEVIck1PLzZQSE5IVHVMbi9scVd2bVlvTFJvczJ1ZFk0b3IxSnVOVXFzd2hJaHFvRmFlUGUrSStHem9jZEgKQnhaVmZpd1I1NTJXRkZ5NHdod2FHUUoxRXhhQXAvc3NILzgwTXVrR2VZbDN5emlCVldLUmFtSzdENXBOT0VYQgpkUmgxY0o1VHZkUjUxYmxNSEpXOXpKMzRadGJtWDlTU3kyaHBOTG9SU3Q1TXF1amVCUzZtRXZJUWFtcGMxaU1HCnMxdk9xMFpFWWNraGpxNENHeEkvOVM0MTMzb3pEK3Rrd1B4WnhGZ0IvVTVjcnliOWdSWT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
-          client-key-data: LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlFb3dJQkFBS0NBUUVBM3lVb1d5WDJSclFqM042cmJKaWRIUTNmd3UyelVrbjE1QmtXVnRpNXBCR1Y1UTFQCnZvOWxyV21PbFl0YlZkZ3pXMi9tNjE2SDR0L3U5dGZ1VENIZjJSRXlxTjY2QXoySW1yVUR0TXRLeDNHQ2JmYXkKMGQ4YnN1b09BNGJ2SDJ4L0lGRVZOVS9YbFU3aUJGZnVEQ2doMm92V2k4UWIza1IvQWcvREU1dG11YWw0R1dVMQpNcHhXUGUvN0cxbUg1QmIyOWpSWXlEWXhMSUtkcDk0UnIzSW1KV0ZGWEFYcW93WENBSGE1M1JrYXNBSkpwWmZ0CkJlYmVCQnc1M2dOSmtrQ0xJbGUrV1U4WGQzR3BEMm9WSGhRcGQ1U0NCMGJDckEwUVRFNnE3eTBXTTdHRkJvZm0KUkFLRytYak5HOWFBMHNhNzlyaHU3azdVZWZraVRCcjZRRmxhU1FJREFRQUJBb0lCQVFDUTU1SkRUbTJWRUZuUgpqZytIMzdyM0tSRkxoZ3hTdlpDZDVPU3ExT1lJY3hzQnVSazF4K3poSlpEZjc3VUtFL0dWeVI4TmJUK1V4cEpwClhXTnpzUE9xQkE3L3RsTFkwOWFua0RDdDhPM0lnaCtPeFFydVdwR2tKM1dlT0x1RGpuTW5TMEFZZEphc2NLTTQKNnRpOHNEcjdycDlOOTdXWktxWEhjdkRkQktjNm5HbmE3ZDNyYXAyUitYci9kZVY3TFJQMVd2U1l4bU5CUDVKYwpoUytWbWlySTJ2VGJESVNBaVlGTThiQ2pjRWxJL096NGgyNlNzdkxDTFRmS1FFUGZjWnBCaVFQY2VoVExWU2NNCkNjNFdFaFVXckNFdmRhTkpvZmhsVVRPYUc1UVM4d0xGSDdPUlBxSFcyVjhPTUZaamVJdUdQaTFxNEx4dlNwc1QKYVVYN011QUJBb0dCQU90VXlQYzJJQU5IWGw2SWw1VVAySnRmMndLM21sQ29ZbU9DbktHN2JhajNndzVuMklJUgpOQWJNRmxyK0NwUjZGcStvMjNac21RekxJcnRFOS8zZERYaFNGUjdLYWYxOFc0UVgxVVB3dGZMNmo0N3RGVFhaCmNaUk9sQmR2eUdtVXN1S3FTbytBYVphNWwxWTI1ak56SlhOaUJjQ05kTGR5ck9DVThIcVJnWElCQW9HQkFQSysKWVUrYWV4ZE10c0dpVHM5RnB5K1p4YTgycXZ6QkZJWU83Zkdzd3ZTc1lrQ3Z3MDBKZ3hhRHMxWWVSYTR1UjVOMQpPSHNEWjdMTlpaRGpPWWRiZzZUOXNUeVN1SlNad2tuZXRYZXVtYU1oN1pNdk91M3pUNlNjWVJsSVVta2pWbFBHCmZjdUE4a3VwVllNM1lGUDkxdC9BemRrd1pFUHZlSkEzSHk1OFA5aEpBb0dBVEcxSXB5Q28zT2U4dWk3YUs4cnQKcWVoRGxHcFViNFdBRHBsSWpTMzF1ejVIRGRLaitmbmtUNkRRVWRUWFVza2p2UUMxNVl2M1dMUlFIMG1TMEp1TgoyRm13Q2tQcWtDeG0vRXRSTTdObEkvaER6ME1uOUVrZUhmQTNJRFZwZlFDUjZCTXVDOVRFZGZMb04xTzFCMWlKCi9TTUVnemh0ZzNaMnRxa29RR1lwQ0FFQ2dZQnloWDBWZURWUVpjSG5Fck1KdUx2S2lrcW9naXNqT2RoNzhya3gKaHFjbmxkaDQyak5TdWdVZGJ4OEJweUNLcjR6WE5idGkxZFZybHRtdkJIU1V0b2tpSXdvbUlMWnliU1FyZzZXcgpoRFU1c0gwTUxvRW4xOTJnTktMZXNhOG5xU05HUE9RR1NaeUdNNnFEVUhIaXptUThoaExYdjZ2ZUhUR05JR1JXCm93bmYrUUtCZ0Z5c09ZM0xUZTd4c1NDRWlybG9xRlRVbXhtcTRES2xGRGt6Y0dhOWpkWWVBM2JkVktHOXBsTUgKbTN4cEdWYjBSRi9wOVY2cVdiYkMvQ3hsV3FEVUIrbGpsODZPbzhxdzAwbmVlRWhhRTJnNEFOaFhpeWRHYUJXZApRZEs4OUlabTdPdEd6bng1Z3dRclhuQzJ0WHJ4bDczQnZva2NVSVZnUTkxdnJHNTY1UjBiCi0tLS0tRU5EIFJTQSBQUklWQVRFIEtFWS0tLS0tCg==
+  namespace: sp1
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: spin-halyard
-  namespace: sp
   labels:
     app: spin
     stack: halyard
+  name: spin-halyard
+  namespace: sp1
 spec:
   replicas: 1
   selector:
@@ -309,52 +303,53 @@ spec:
         stack: halyard
     spec:
       containers:
-      - name: halyard-daemon
-        # todo - make :stable or digest of :stable
-        image: gcr.io/spinnaker-marketplace/halyard:stable
-        imagePullPolicy: Always
-        command:
-        - /bin/sh
-        args:
-        - -c
-        - "cp -R /home/spinnaker/staging/.hal /home/spinnaker/.hal && cp -R /home/spinnaker/staging/.kube /home/spinnaker/.kube && /opt/halyard/bin/halyard"
-        readinessProbe:
-          exec:
-            command:
-            - wget
-            - -q
-            - --spider
-            - http://localhost:8064/health
-        ports:
-        - containerPort: 8064
-        volumeMounts:
-        - name: halconfig
-          mountPath: /home/spinnaker/staging/.hal/config
-          subPath: config
-        - name: kubeconfig
-          mountPath: /home/spinnaker/staging/.kube/config
-          subPath: config
+        - args:
+            - '-c'
+            - >-
+              cp -R /home/spinnaker/staging/.hal /home/spinnaker/.hal && cp -R
+              /home/spinnaker/staging/.kube /home/spinnaker/.kube &&
+              /opt/halyard/bin/halyard
+          command:
+            - /bin/sh
+          image: 'gcr.io/spinnaker-marketplace/halyard:stable'
+          imagePullPolicy: Always
+          name: halyard-daemon
+          ports:
+            - containerPort: 8064
+          readinessProbe:
+            exec:
+              command:
+                - wget
+                - '-q'
+                - '--spider'
+                - 'http://localhost:8064/health'
+          volumeMounts:
+            - mountPath: /home/spinnaker/staging/.hal/config
+              name: halconfig
+              subPath: config
+            - mountPath: /home/spinnaker/staging/.kube/config
+              name: kubeconfig
+              subPath: config
       volumes:
-      - name: halconfig
-        configMap:
-          defaultMode: 420
+        - configMap:
+            defaultMode: 420
+            name: halconfig
           name: halconfig
-      - name: kubeconfig
-        configMap:
-          defaultMode: 420
+        - configMap:
+            defaultMode: 420
+            name: kubeconfig
           name: kubeconfig
 ---
-
 apiVersion: v1
 kind: Service
 metadata:
   name: spin-halyard
-  namespace: sp
+  namespace: sp1
 spec:
   ports:
     - port: 8064
-      targetPort: 8064
       protocol: TCP
+      targetPort: 8064
   selector:
     app: spin
     stack: halyard
@@ -363,26 +358,25 @@ spec:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: hal-deploy-apply
-  namespace: sp
   labels:
     app: job
     stack: hal-deploy
+  name: hal-deploy-apply
+  namespace: sp1
 spec:
-  activeDeadlineSeconds: 200
+  activeDeadlineSeconds: 300
   template:
     metadata:
       labels:
         app: job
         stack: hal-deploy
     spec:
-      restartPolicy: OnFailure
       containers:
-      - name: hal-deploy-apply
-        # todo use a custom image
-        image: gcr.io/spinnaker-marketplace/halyard:stable
-        command:
-        - /bin/sh
-        args:
-        - -c
-        - "hal deploy apply --daemon-endpoint http://spin-halyard.sp1:8064"
+        - args:
+            - '-c'
+            - 'hal deploy apply --daemon-endpoint http://spin-halyard.sp1:8064'
+          command:
+            - /bin/sh
+          image: 'gcr.io/spinnaker-marketplace/halyard:stable'
+          name: hal-deploy-apply
+      restartPolicy: OnFailure
