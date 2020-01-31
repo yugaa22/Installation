@@ -385,4 +385,4 @@ spec:
         - /bin/sh
         args:
         - -c
-        - "hal deploy apply --daemon-endpoint http://spin-halyard.sp:8064"
+        - "hal deploy apply --daemon-endpoint http://spin-halyard.sp1:8064"
