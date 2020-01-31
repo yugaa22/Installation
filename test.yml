@@ -1,14 +1,14 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: sp1
+  name: sp
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   # This name uniquely identifies the Deployment
   name: minio-deployment
-  namespace: sp1
+  namespace: sp
 spec:
   strategy:
     type: Recreate
@@ -43,7 +43,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: minio-service
-  namespace: sp1
+  namespace: sp
 spec:
   type: NodePort
   ports:
@@ -57,7 +57,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: halconfig
-  namespace: sp1
+  namespace: sp
 data:
   config: |
     currentDeployment: default
@@ -265,7 +265,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: kubeconfig
-  namespace: sp1
+  namespace: sp
 data:
   config: |
       apiVersion: v1
@@ -287,12 +287,12 @@ data:
         user:
           client-certificate-data: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUM4akNDQWRxZ0F3SUJBZ0lJR2RIR2JZYVZxSWt3RFFZSktvWklodmNOQVFFTEJRQXdGVEVUTUJFR0ExVUUKQXhNS2EzVmlaWEp1WlhSbGN6QWVGdzB5TURBeE16RXdOVEl5TVRSYUZ3MHlNVEF4TXpBd05USXlNakZhTURReApGekFWQmdOVkJBb1REbk41YzNSbGJUcHRZWE4wWlhKek1Sa3dGd1lEVlFRREV4QnJkV0psY201bGRHVnpMV0ZrCmJXbHVNSUlCSWpBTkJna3Foa2lHOXcwQkFRRUZBQU9DQVE4QU1JSUJDZ0tDQVFFQTN5VW9XeVgyUnJRajNONnIKYkppZEhRM2Z3dTJ6VWtuMTVCa1dWdGk1cEJHVjVRMVB2bzlscldtT2xZdGJWZGd6VzIvbTYxNkg0dC91OXRmdQpUQ0hmMlJFeXFONjZBejJJbXJVRHRNdEt4M0dDYmZheTBkOGJzdW9PQTRidkgyeC9JRkVWTlUvWGxVN2lCRmZ1CkRDZ2gyb3ZXaThRYjNrUi9BZy9ERTV0bXVhbDRHV1UxTXB4V1BlLzdHMW1INUJiMjlqUll5RFl4TElLZHA5NFIKcjNJbUpXRkZYQVhxb3dYQ0FIYTUzUmthc0FKSnBaZnRCZWJlQkJ3NTNnTkpra0NMSWxlK1dVOFhkM0dwRDJvVgpIaFFwZDVTQ0IwYkNyQTBRVEU2cTd5MFdNN0dGQm9mbVJBS0crWGpORzlhQTBzYTc5cmh1N2s3VWVma2lUQnI2ClFGbGFTUUlEQVFBQm95Y3dKVEFPQmdOVkhROEJBZjhFQkFNQ0JhQXdFd1lEVlIwbEJBd3dDZ1lJS3dZQkJRVUgKQXdJd0RRWUpLb1pJaHZjTkFRRUxCUUFEZ2dFQkFHUzNFTjh6SE9QZmdxTUZNNjlTNWtFWjkyY0d6ajNnclNGMwpwMXRUVmpGTWUwYTVzYVlFQUkxOE1XOTZqL3FucEM0OG1xQzNFaW8yVS9iU20yZ2NKWFQ1V25nNjZqYzhFUDlpCnp3eEVIck1PLzZQSE5IVHVMbi9scVd2bVlvTFJvczJ1ZFk0b3IxSnVOVXFzd2hJaHFvRmFlUGUrSStHem9jZEgKQnhaVmZpd1I1NTJXRkZ5NHdod2FHUUoxRXhhQXAvc3NILzgwTXVrR2VZbDN5emlCVldLUmFtSzdENXBOT0VYQgpkUmgxY0o1VHZkUjUxYmxNSEpXOXpKMzRadGJtWDlTU3kyaHBOTG9SU3Q1TXF1amVCUzZtRXZJUWFtcGMxaU1HCnMxdk9xMFpFWWNraGpxNENHeEkvOVM0MTMzb3pEK3Rrd1B4WnhGZ0IvVTVjcnliOWdSWT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
           client-key-data: LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlFb3dJQkFBS0NBUUVBM3lVb1d5WDJSclFqM042cmJKaWRIUTNmd3UyelVrbjE1QmtXVnRpNXBCR1Y1UTFQCnZvOWxyV21PbFl0YlZkZ3pXMi9tNjE2SDR0L3U5dGZ1VENIZjJSRXlxTjY2QXoySW1yVUR0TXRLeDNHQ2JmYXkKMGQ4YnN1b09BNGJ2SDJ4L0lGRVZOVS9YbFU3aUJGZnVEQ2doMm92V2k4UWIza1IvQWcvREU1dG11YWw0R1dVMQpNcHhXUGUvN0cxbUg1QmIyOWpSWXlEWXhMSUtkcDk0UnIzSW1KV0ZGWEFYcW93WENBSGE1M1JrYXNBSkpwWmZ0CkJlYmVCQnc1M2dOSmtrQ0xJbGUrV1U4WGQzR3BEMm9WSGhRcGQ1U0NCMGJDckEwUVRFNnE3eTBXTTdHRkJvZm0KUkFLRytYak5HOWFBMHNhNzlyaHU3azdVZWZraVRCcjZRRmxhU1FJREFRQUJBb0lCQVFDUTU1SkRUbTJWRUZuUgpqZytIMzdyM0tSRkxoZ3hTdlpDZDVPU3ExT1lJY3hzQnVSazF4K3poSlpEZjc3VUtFL0dWeVI4TmJUK1V4cEpwClhXTnpzUE9xQkE3L3RsTFkwOWFua0RDdDhPM0lnaCtPeFFydVdwR2tKM1dlT0x1RGpuTW5TMEFZZEphc2NLTTQKNnRpOHNEcjdycDlOOTdXWktxWEhjdkRkQktjNm5HbmE3ZDNyYXAyUitYci9kZVY3TFJQMVd2U1l4bU5CUDVKYwpoUytWbWlySTJ2VGJESVNBaVlGTThiQ2pjRWxJL096NGgyNlNzdkxDTFRmS1FFUGZjWnBCaVFQY2VoVExWU2NNCkNjNFdFaFVXckNFdmRhTkpvZmhsVVRPYUc1UVM4d0xGSDdPUlBxSFcyVjhPTUZaamVJdUdQaTFxNEx4dlNwc1QKYVVYN011QUJBb0dCQU90VXlQYzJJQU5IWGw2SWw1VVAySnRmMndLM21sQ29ZbU9DbktHN2JhajNndzVuMklJUgpOQWJNRmxyK0NwUjZGcStvMjNac21RekxJcnRFOS8zZERYaFNGUjdLYWYxOFc0UVgxVVB3dGZMNmo0N3RGVFhaCmNaUk9sQmR2eUdtVXN1S3FTbytBYVphNWwxWTI1ak56SlhOaUJjQ05kTGR5ck9DVThIcVJnWElCQW9HQkFQSysKWVUrYWV4ZE10c0dpVHM5RnB5K1p4YTgycXZ6QkZJWU83Zkdzd3ZTc1lrQ3Z3MDBKZ3hhRHMxWWVSYTR1UjVOMQpPSHNEWjdMTlpaRGpPWWRiZzZUOXNUeVN1SlNad2tuZXRYZXVtYU1oN1pNdk91M3pUNlNjWVJsSVVta2pWbFBHCmZjdUE4a3VwVllNM1lGUDkxdC9BemRrd1pFUHZlSkEzSHk1OFA5aEpBb0dBVEcxSXB5Q28zT2U4dWk3YUs4cnQKcWVoRGxHcFViNFdBRHBsSWpTMzF1ejVIRGRLaitmbmtUNkRRVWRUWFVza2p2UUMxNVl2M1dMUlFIMG1TMEp1TgoyRm13Q2tQcWtDeG0vRXRSTTdObEkvaER6ME1uOUVrZUhmQTNJRFZwZlFDUjZCTXVDOVRFZGZMb04xTzFCMWlKCi9TTUVnemh0ZzNaMnRxa29RR1lwQ0FFQ2dZQnloWDBWZURWUVpjSG5Fck1KdUx2S2lrcW9naXNqT2RoNzhya3gKaHFjbmxkaDQyak5TdWdVZGJ4OEJweUNLcjR6WE5idGkxZFZybHRtdkJIU1V0b2tpSXdvbUlMWnliU1FyZzZXcgpoRFU1c0gwTUxvRW4xOTJnTktMZXNhOG5xU05HUE9RR1NaeUdNNnFEVUhIaXptUThoaExYdjZ2ZUhUR05JR1JXCm93bmYrUUtCZ0Z5c09ZM0xUZTd4c1NDRWlybG9xRlRVbXhtcTRES2xGRGt6Y0dhOWpkWWVBM2JkVktHOXBsTUgKbTN4cEdWYjBSRi9wOVY2cVdiYkMvQ3hsV3FEVUIrbGpsODZPbzhxdzAwbmVlRWhhRTJnNEFOaFhpeWRHYUJXZApRZEs4OUlabTdPdEd6bng1Z3dRclhuQzJ0WHJ4bDczQnZva2NVSVZnUTkxdnJHNTY1UjBiCi0tLS0tRU5EIFJTQSBQUklWQVRFIEtFWS0tLS0tCg==
----      
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: spin-halyard
-  namespace: sp1
+  namespace: sp
   labels:
     app: spin
     stack: halyard
@@ -344,11 +344,12 @@ spec:
           defaultMode: 420
           name: kubeconfig
 ---
+
 apiVersion: v1
 kind: Service
 metadata:
   name: spin-halyard
-  namespace: sp1
+  namespace: sp
 spec:
   ports:
     - port: 8064
@@ -363,12 +364,12 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: hal-deploy-apply
-  namespace: sp1
+  namespace: sp
   labels:
     app: job
     stack: hal-deploy
 spec:
-  activeDeadlineSeconds: 150
+  activeDeadlineSeconds: 200
   template:
     metadata:
       labels:
