@@ -1,14 +1,14 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: sp
+  name: sp1
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   # This name uniquely identifies the Deployment
   name: minio-deployment
-  namespace: sp
+  namespace: sp1
 spec:
   strategy:
     type: Recreate
@@ -43,7 +43,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: minio-service
-  namespace: sp
+  namespace: sp1
 spec:
   type: NodePort
   ports:
@@ -57,13 +57,13 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: halconfig
-  namespace: sp
+  namespace: sp1
 data:
   config: |
     currentDeployment: default
     deploymentConfigurations:
     - name: default
-      version: 1.17.2
+      version: 1.17.6
       providers:
         appengine:
           enabled: false
@@ -131,7 +131,7 @@ data:
         type: Distributed
         accountName: my-k8s-v2-account
         updateVersions: true
-        location: sp
+        location: sp1
         consul:
           enabled: false
         vault:
@@ -147,7 +147,7 @@ data:
           bucket: test
           rootFolder: front50
           region: us-west-2
-          endpoint: http://minio-service.sp:9000
+          endpoint: http://minio-service.sp1:9000
           accessKeyId: opsmx
           secretAccessKey: opsmx123
         oraclebmcs: {}
@@ -157,6 +157,7 @@ data:
         chaos: false
         entityTags: false
         jobs: false
+        artifacts: true
         managedPipelineTemplatesV2UI: true
       metricStores:
         datadog:
@@ -225,11 +226,11 @@ data:
           enabled: false
           accounts: []
         github:
-          enabled: false
+          enabled: true
           accounts:
           - name: opsmx_account
-            username: phanikumarp
-            password: Kumar@1612
+            username: yugaa22
+            password: opsmx123
         http:
           enabled: false
           accounts: []
@@ -265,7 +266,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: kubeconfig
-  namespace: sp
+  namespace: sp1
 data:
   config: |
       apiVersion: v1
@@ -292,7 +293,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: spin-halyard
-  namespace: sp
+  namespace: sp1
   labels:
     app: spin
     stack: halyard
@@ -348,7 +349,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: spin-halyard
-  namespace: sp
+  namespace: sp1
 spec:
   ports:
     - port: 8064
@@ -363,7 +364,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: hal-deploy-apply
-  namespace: sp
+  namespace: sp1
   labels:
     app: job
     stack: hal-deploy
@@ -384,4 +385,4 @@ spec:
         - /bin/sh
         args:
         - -c
-        - "hal deploy apply --daemon-endpoint http://spin-halyard.sp:8064"
+        - "hal deploy apply --daemon-endpoint http://spin-halyard.sp1:8064"
