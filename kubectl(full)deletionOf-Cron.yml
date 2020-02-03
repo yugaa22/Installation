@@ -63,7 +63,7 @@ data:
     currentDeployment: default
     deploymentConfigurations:
     - name: default
-      version: 1.17.2
+      version: 1.17.6
       providers:
         appengine:
           enabled: false
@@ -156,6 +156,7 @@ data:
         fiat: false
         chaos: false
         entityTags: false
+        artifacts: true
         jobs: false
         managedPipelineTemplatesV2UI: true
       metricStores:
@@ -225,11 +226,11 @@ data:
           enabled: false
           accounts: []
         github:
-          enabled: false
+          enabled: true
           accounts:
           - name: opsmx_account
-            username: phanikumarp
-            password: Kumar@1612
+            username: yugaa22
+            password: opsmx123
         http:
           enabled: false
           accounts: []
