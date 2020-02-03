@@ -369,7 +369,7 @@ metadata:
     app: job
     stack: hal-deploy
 spec:
-  activeDeadlineSeconds: 120
+  activeDeadlineSeconds: 100
   template:
     metadata:
       labels:
