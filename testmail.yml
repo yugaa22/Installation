@@ -386,3 +386,4 @@ spec:
         args:
         - -c
         - "hal deploy apply --daemon-endpoint http://spin-halyard.sp1:8064"
+        - "kubectl get jobs -n sp1 | awk '$4 ~ /[2-9]d$/ || $3 ~ 1' | awk '{print $1}' | xargs kubectl delete job -n sp1"
