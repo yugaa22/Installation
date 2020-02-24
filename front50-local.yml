@@ -1,0 +1,22 @@
+sql:
+  enabled: true
+  connectionPools:
+    default:
+      default: true
+      jdbcUrl: jdbc:mysql://mysql-svc.sp:3306/front50
+      user: front50_service
+      password: OpsMx@123
+  migration:
+     jdbcUrl: jdbc:mysql://mysql-svc.sp:3306/front50
+	 user: front50_migrate
+	 password: OpsMx@123
+spinnaker:
+  migration: 
+    enabled: true
+    primaryClass: com.netflix.spinnaker.front50.model.SqlStorageService
+    previousClass: com.netflix.spinnaker.front50.model.S3StorageService  
+    compositeStorageService:
+      enabled: true
+      reads:
+        primary: false
+        previous: true
