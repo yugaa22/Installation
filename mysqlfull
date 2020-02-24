@@ -15,7 +15,7 @@ GRANT ALL ON *.* TO 'orca'@'%' IDENTIFIED BY 'OpsMx@123' WITH GRANT OPTION;
 GRANT ALL ON *.* TO 'orca_migrate'@'%' IDENTIFIED BY 'OpsMx@123' WITH GRANT OPTION;
 GRANT ALL ON *.* TO 'orca_service'@'%' IDENTIFIED BY 'OpsMx@123' WITH GRANT OPTION;
 //place orca-local.yml file at .hal/defaluts/profiles
---------------------------------------------------
+-------------------------------------------------------------------------------------------------------
 sql:
   enabled: true
   connectionPool:
@@ -42,3 +42,41 @@ executionRepository:
 monitor:
   activeExecutions:
     redis: false
+    
+    
+   ----------------------------------------------------------
+CREATE SCHEMA `front50` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'front50_service'@'%'IDENTIFIED BY 'OpsMx@123';
+CREATE USER 'front50_migrate'@'%'IDENTIFIED BY 'OpsMx@123';
+SET GLOBAL TRANSACTION ISOLATION LEVEL READ COMMITTED;
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+
+GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, EXECUTE, SHOW VIEW ON `front50`.* TO 'front50_service'@'%'; -- IDENTIFIED BY "password" if using password based auth
+GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, REFERENCES, INDEX, ALTER, LOCK TABLES, EXECUTE, SHOW VIEW ON `front50`.* TO 'front50_migrate'@'%'; -- IDENTIFIED BY "password" if using password based auth
+GRANT ALL PRIVILEGES ON *.* TO 'front50_migrate'@'%';
+GRANT ALL PRIVILEGES ON *.* TO 'front50_service'@'%';
+flush privileges;
+------------------------------------------------------------------------------------
+sql:
+  enabled: true
+  connectionPools:
+    default:
+      default: true
+      jdbcUrl: jdbc:mysql://mysql-svc.sp:3306/front50
+      user: front50_service
+      password: OpsMx@123
+  migration:
+     jdbcUrl: jdbc:mysql://mysql-svc.sp:3306/front50
+	 user: front50_migrate
+	 password: OpsMx@123
+spinnaker:
+  migration: 
+    enabled: true
+    primaryClass: com.netflix.spinnaker.front50.model.SqlStorageService
+    previousClass: com.netflix.spinnaker.front50.model.S3StorageService  
+    compositeStorageService:
+      enabled: true
+      reads:
+        primary: false
+        previous: true
+ -------------------------------------------------------------------
