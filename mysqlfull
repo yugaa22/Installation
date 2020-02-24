@@ -77,6 +77,6 @@ spinnaker:
     compositeStorageService:
       enabled: true
       reads:
-        primary: false
+        primary: false  # after change it to true 
         previous: true
  -------------------------------------------------------------------
