@@ -23,8 +23,8 @@ sql:
       password: OpsMx@123
   migration:
     jdbcUrl: jdbc:mysql://<<servicename>>.<<namespace>>:3306/clouddriver
-	user: clouddriver_migrate
-	password: OpsMx@123
+        user: clouddriver_migrate
+        password: OpsMx@123
 
 redis:
   enabled: false
