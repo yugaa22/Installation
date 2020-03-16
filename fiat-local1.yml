@@ -38,3 +38,9 @@ auth:
       userDnPattern: CN={0},CN=Users,dc=hyd,dc=opsmx,dc=net
       userSearchBase: DC=hyd,DC=opsmx,DC=net
       userSearchFilter: (|(distinguishedName=CN={0},CN=Users,DC=hyd,DC=opsmx,DC=net)(distinguishedName=CN={0},OU=Dev,OU=OpsMx_User,DC=hyd,DC=opsmx,DC=net)(distinguishedName=CN={0},OU=Devops,OU=OpsMx_User,DC=hyd,DC=opsmx,DC=net))
+
+
+
+
+
+hal config security authz ldap edit --url ldap://35.230.138.249:389/dc=MYDOMAIN,dc=COM --manager-dn CN=Sandesh,CN=Users,DC=local,DC=opsmx,DC=com --manager-password --user-dn-pattern CN={0},CN=Users,dc=local,dc=opsmx,dc=com --group-search-base OU=Opsmx User,DC=local,DC=opsmx,DC=com --group-search-filter "member={0}" --group-role-attributes cn ----user-search-filter '(|(distinguishedName=CN={0},CN=Users,DC=local,DC=opsmx,DC=com)(distinguishedName=CN={0},OU=Employees,OU=Opsmx User,DC=local,DC=opsmx,DC=com)(distinguishedName=CN={0},OU=Generics,OU=OpsmxUser,DC=local,DC=opsmx,DC=com)(distinguishedName=CN={0},OU=CATE,DC=local,DC=opsmx,DC=com))' --user-search-base DC=local,DC=opsmx,DC=com
